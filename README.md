@@ -95,17 +95,72 @@ uv run fc-pipeline
 
 ## Verification
 
+### Row counts
+
 ```bash
-# Row counts (dlt prefixes table names with dataset name)
+# PostgreSQL
+kubectl exec -n fitconnect postgres-0 -- psql -U postgres -c "
+  SELECT 'User' AS t, count(*) AS c FROM \"User\"
+  UNION ALL SELECT 'Profile', count(*) FROM \"Profile\"
+  UNION ALL SELECT 'Exercise', count(*) FROM \"Exercise\"
+  UNION ALL SELECT 'Workout', count(*) FROM \"Workout\"
+  UNION ALL SELECT 'WorkoutExercise', count(*) FROM \"WorkoutExercise\";
+"
+
+# ClickHouse (dlt prefixes table names with dataset name)
 kubectl exec -n fitconnect clickhouse-0 -- clickhouse-client --password changeme \
   --query "
-    SELECT 'user', count(*) FROM fitconnect.fitconnect___user
+    SELECT 'user' AS t, count(*) AS c FROM fitconnect.fitconnect___user
     UNION ALL SELECT 'profile', count(*) FROM fitconnect.fitconnect___profile
     UNION ALL SELECT 'exercise', count(*) FROM fitconnect.fitconnect___exercise
     UNION ALL SELECT 'workout', count(*) FROM fitconnect.fitconnect___workout
     UNION ALL SELECT 'workout_exercise', count(*) FROM fitconnect.fitconnect___workout_exercise
   "
 # Expected: user 10, profile 10, exercise 10, workout 104, workout_exercise 426
+```
+
+### Sample data
+
+```bash
+# PostgreSQL — first 5 users
+kubectl exec -n fitconnect postgres-0 -- psql -U postgres -c \
+  'SELECT "UserID", "Username", "Email", "JoinDate" FROM "User" LIMIT 5;'
+
+# PostgreSQL — workouts per user
+kubectl exec -n fitconnect postgres-0 -- psql -U postgres -c \
+  'SELECT u."Username", count(w."WorkoutID") AS workouts
+   FROM "User" u JOIN "Workout" w ON u."UserID" = w."UserID"
+   GROUP BY u."Username" ORDER BY workouts DESC;'
+
+# ClickHouse — first 5 users
+kubectl exec -n fitconnect clickhouse-0 -- clickhouse-client --password changeme \
+  --query "SELECT UserID, Username, Email, JoinDate FROM fitconnect.fitconnect___user LIMIT 5"
+
+# ClickHouse — workouts per user with avg calories
+kubectl exec -n fitconnect clickhouse-0 -- clickhouse-client --password changeme \
+  --query "
+    SELECT u.Username, count(w.WorkoutID) AS workouts, round(avg(w.CaloriesBurned), 1) AS avg_cal
+    FROM fitconnect.fitconnect___workout w
+    JOIN fitconnect.fitconnect___user u ON w.UserID = u.UserID
+    GROUP BY u.Username
+    ORDER BY workouts DESC
+  "
+```
+
+### CDC verification
+
+```bash
+# Check replication slot
+kubectl exec -n fitconnect postgres-0 -- psql -U postgres -c \
+  "SELECT slot_name, plugin, active FROM pg_replication_slots;"
+
+# Check publication
+kubectl exec -n fitconnect postgres-0 -- psql -U postgres -c \
+  "SELECT pubname FROM pg_publication;"
+
+# List ClickHouse tables
+kubectl exec -n fitconnect clickhouse-0 -- clickhouse-client --password changeme \
+  --query "SHOW TABLES FROM fitconnect"
 ```
 
 ## Security
