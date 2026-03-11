@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.egg-info/
+dist/
+.venv/
+.ruff_cache/
+.claude/
+docs/DEMO_GUIDE.md
+docs/ennonce_converted.md
+docs/NEXT_SESSION.md
+docs/SUIVI_PROJET.md

@@ -1,0 +1,11 @@
+ExerciseID,Name,Description,Category,MuscleGroup,DifficultyLevel,DemoVideoURL
+1,Exercise1,Desc 1,Strength,Full Body,Medium,http://demo.com
+2,Exercise2,Desc 2,Strength,Arms,Medium,http://demo.com
+3,Exercise3,Desc 3,Strength,Legs,Medium,http://demo.com
+4,Exercise4,Desc 4,Strength,Abs,Medium,http://demo.com
+5,Exercise5,Desc 5,Strength,Lower Body,Medium,http://demo.com
+6,Exercise6,Desc 6,Strength,Upper Body,Medium,http://demo.com
+7,Exercise7,Desc 7,Strength,Back,Medium,http://demo.com
+8,Exercise8,Desc 8,Strength,Chest,Medium,http://demo.com
+9,Exercise9,Desc 9,Stamina,Upper Body,Medium,http://demo.com
+10,Exercise10,Desc 10,Stamina,Full Body,Medium,http://demo.com

@@ -1,0 +1,11 @@
+UserID,Username,Email,Password,JoinDate,LastLogin,AccountStatus
+1,user1,user1@fitconnect.com,hashed_pwd,2024-02-24,2022-11-19,Active
+2,user2,user2@fitconnect.com,hashed_pwd,2025-03-20,2025-01-12,Active
+3,user3,user3@fitconnect.com,hashed_pwd,2022-08-13,2023-01-24,Active
+4,user4,user4@fitconnect.com,hashed_pwd,2022-07-24,2022-01-09,Active
+5,user5,user5@fitconnect.com,hashed_pwd,2024-09-04,2025-02-10,Active
+6,user6,user6@fitconnect.com,hashed_pwd,2022-09-16,2022-09-13,Active
+7,user7,user7@fitconnect.com,hashed_pwd,2023-02-28,2025-03-17,Active
+8,user8,user8@fitconnect.com,hashed_pwd,2022-12-10,2024-03-10,Active
+9,user9,user9@fitconnect.com,hashed_pwd,2025-04-06,2023-11-17,Active
+10,user10,user10@fitconnect.com,hashed_pwd,2024-12-06,2024-01-15,Active

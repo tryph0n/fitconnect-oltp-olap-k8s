@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clickhouse-config
+  namespace: fitconnect
+data:
+  storage.xml: |
+    <clickhouse>
+      <storage_configuration>
+        <disks>
+          <s3>
+            <type>s3</type>
+            <endpoint>https://BUCKET.s3.REGION.amazonaws.com/clickhouse/data/</endpoint>
+            <access_key_id from_env="S3_ACCESS_KEY_ID"/>
+            <secret_access_key from_env="S3_SECRET_ACCESS_KEY"/>
+          </s3>
+        </disks>
+        <policies>
+          <s3_main>
+            <volumes>
+              <main>
+                <disk>s3</disk>
+              </main>
+            </volumes>
+          </s3_main>
+        </policies>
+      </storage_configuration>
+    </clickhouse>
+  users.xml: |
+    <clickhouse>
+      <users>
+        <default>
+          <password from_env="CLICKHOUSE_PASSWORD"/>
+          <access_management>1</access_management>
+        </default>
+      </users>
+    </clickhouse>

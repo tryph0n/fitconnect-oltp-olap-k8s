@@ -1,0 +1,25 @@
+[project]
+name = "fitconnect"
+version = "0.1.0"
+description = "FitConnect OLTP-to-OLAP pipeline: PostgreSQL → dlt → ClickHouse"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dlt[clickhouse,sql_database]",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.1",
+    "pandas>=2.0",
+    "pydantic-settings>=2.13.1",
+]
+
+[project.scripts]
+fc-seed = "fitconnect.seed:main"
+fc-cdc = "fitconnect.cdc_setup:main"
+fc-pipeline = "fitconnect.pipeline:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fitconnect"]

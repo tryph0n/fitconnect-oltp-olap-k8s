@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: fitconnect-pipeline
+  namespace: fitconnect
+spec:
+  template:
+    metadata:
+      labels:
+        app: fitconnect-pipeline
+    spec:
+      containers:
+        - name: pipeline
+          image: sambot961/fitconnect-pipeline:latest
+          imagePullPolicy: Always
+          command: ["uv", "run", "fc-pipeline"]
+          envFrom:
+            - secretRef:
+                name: fitconnect-env
+      restartPolicy: Never
+  backoffLimit: 2
