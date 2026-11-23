@@ -1,47 +1,53 @@
-"""Centralized configuration via pydantic-settings."""
+"""Settings from environment variables and an optional .env file."""
 
+import logging
+from functools import lru_cache
+
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment / .env file."""
+    """Connection settings. Passwords have no default: a missing or empty one stops the program."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        # .env also holds keys for the database images (POSTGRES_*, CLICKHOUSE_*) and S3.
+        extra="ignore",
     )
 
-    # PostgreSQL
     pg_user: str = "postgres"
-    pg_password: str = "changeme"
+    pg_password: str = Field(min_length=1)
     pg_host: str = "localhost"
     pg_port: int = 5432
     pg_db: str = "postgres"
 
-    # ClickHouse
     ch_host: str = "localhost"
     ch_port: int = 9000
     ch_http_port: int = 8123
     ch_user: str = "default"
-    ch_password: str = "changeme"
+    ch_password: str = Field(min_length=1)
     ch_database: str = "fitconnect"
 
-    # S3 (optional)
-    s3_endpoint: str = ""
-    s3_access_key_id: str = ""
-    s3_secret_access_key: str = ""
+    cdc_poll_seconds: float = 5.0
+    cdc_heartbeat_file: str = "/tmp/fitconnect-cdc-heartbeat"
 
-    @property
-    def pg_url(self) -> str:
-        """Build the PostgreSQL connection URL (psycopg v3 driver)."""
-        return (
-            f"postgresql+psycopg://{self.pg_user}:{self.pg_password}"
-            f"@{self.pg_host}:{self.pg_port}/{self.pg_db}"
-        )
+    def pg_url(self, drivername: str = "postgresql+psycopg") -> str:
+        """Returns the PostgreSQL URL; `postgresql` gives a URL for psycopg2."""
+        return URL.create(
+            drivername,
+            username=self.pg_user,
+            password=self.pg_password,
+            host=self.pg_host,
+            port=self.pg_port,
+            database=self.pg_db,
+        ).render_as_string(hide_password=False)
 
     @property
     def ch_credentials(self) -> dict:
-        """Return ClickHouse credentials as a dict suitable for dlt."""
+        """Returns the ClickHouse credentials in the form that dlt expects."""
         return {
             "host": self.ch_host,
             "port": self.ch_port,
@@ -53,4 +59,12 @@ class Settings(BaseSettings):
         }
 
 
-settings = Settings()
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
