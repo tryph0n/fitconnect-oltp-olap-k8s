@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: fitconnect-cdc
+  name: fitconnect-cdc-setup
   namespace: fitconnect
 spec:
   template:
@@ -10,10 +10,10 @@ spec:
         app: fitconnect-pipeline
     spec:
       containers:
-        - name: cdc
-          image: sambot961/fitconnect-pipeline:latest
-          imagePullPolicy: Always
-          command: ["uv", "run", "fc-cdc"]
+        - name: cdc-setup
+          image: ghcr.io/tryph0n/fitconnect-pipeline:0.2.0
+          imagePullPolicy: IfNotPresent
+          command: ["fc-cdc-setup"]
           envFrom:
             - secretRef:
                 name: fitconnect-env

@@ -73,15 +73,14 @@ class Workout(Base):
 class WorkoutExercise(Base):
     __tablename__ = "WorkoutExercise"
 
-    WorkoutID = Column(
-        Integer, ForeignKey("Workout.WorkoutID"), primary_key=True
-    )
-    ExerciseID = Column(
-        Integer, ForeignKey("Exercise.ExerciseID"), primary_key=True
-    )
+    WorkoutID = Column(Integer, ForeignKey("Workout.WorkoutID"), primary_key=True)
+    ExerciseID = Column(Integer, ForeignKey("Exercise.ExerciseID"), primary_key=True)
     SetCount = Column(Integer)
     RepCount = Column(Integer)
     Weight = Column(Float)
     Duration = Column(Integer)
     Notes = Column(Text)
     Order = Column(Integer)
+
+
+TABLES = ("User", "Profile", "Exercise", "Workout", "WorkoutExercise")

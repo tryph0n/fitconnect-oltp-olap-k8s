@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:16
+          image: postgres:16.16
           ports:
             - containerPort: 5432
           envFrom:
@@ -30,6 +30,9 @@ spec:
             - "max_wal_senders=4"
             - "-c"
             - "max_replication_slots=4"
+            # A slot without a reader keeps WAL; past this size PostgreSQL marks it lost.
+            - "-c"
+            - "max_slot_wal_keep_size=256MB"
           readinessProbe:
             exec:
               command: ["pg_isready", "-U", "postgres", "-d", "postgres"]

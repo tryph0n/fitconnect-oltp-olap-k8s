@@ -1,0 +1,44 @@
+engine_version: 1
+sources:
+  pg_replication:
+    is_dirty: false
+    last_commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+    last_commit_timestamp: '2026-11-18T16:55:59+01:00'
+    files:
+      pg_replication/decoders.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: ce02a607437027663dc049875629b5c0396a0cc6
+        sha3_256: 11875a16c44aeb36a1e72748bf22a66eca421e3809e168cb7c1ab59c534555da
+      pg_replication/arrow_helpers.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: f6106e864c3fcf5c9ee577b4a6fe353ee415f9bf
+        sha3_256: 22ccc1eaca83b24a370e04fda40adfebd0bb966a56725860a371536b1119c8bb
+      pg_replication/snapshot.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: bec707d39ee4d4a413bf10f1251aed797189ef4c
+        sha3_256: b009662dccf5feca022160d5dca89875d4f878c386c8680bd819961e3d13b837
+      pg_replication/helpers.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: 74c39fd916b5cee763381d44e6cd185d80c5b513
+        sha3_256: dac86f1c2a3ef6861013219cef9cf415c17ff2bc7e8bf4087ac93e1a28bf5da9
+      pg_replication/exceptions.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: fa5f42c009f6faf8b324a41b5dd04a2f12dea713
+        sha3_256: 88c5296c894fd5f31dda7e8c004679e7aea38b9a7a66f7e278b539c14cb82160
+      pg_replication/version.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: 7863915fa5f8f014c64c8abff41a138e9b3cd4d3
+        sha3_256: 27e7d160cb51720ccb4d1555e0f74ca210222876633330fcc40896f091e95cfb
+      pg_replication/schema_types.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: 9ff34ab2fc3e9828c19fbec3e819d779128e6b22
+        sha3_256: a37895cde54db4c451be787e8bb270d50f072ff2608e8914e506d0025a9984c9
+      pg_replication/README.md:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: 5a1fff62ae31a608a90507615c9421265fffbacd
+        sha3_256: 0bb1f90aa46e415a4baee910821138b41970dcf1417266002203992508484da2
+      pg_replication/__init__.py:
+        commit_sha: 952bf8df696ebe285353a183f92be2a633a538ba
+        git_sha: 5bed85681a0cf909b8be498719cc8787a936d6b6
+        sha3_256: f9d6c0c6773ceed606064b34d3ad3c594b9d655b0ada75ccd8d045f7a8ff74f0
+    dlt_version_constraint: '>=1.22.0'

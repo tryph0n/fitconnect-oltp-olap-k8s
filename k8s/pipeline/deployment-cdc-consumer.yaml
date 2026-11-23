@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fitconnect-cdc-consumer
+  namespace: fitconnect
+spec:
+  replicas: 1
+  # Only one reader per replication slot: stop the old pod before the new one starts.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: fitconnect-cdc-consumer
+  template:
+    metadata:
+      labels:
+        app: fitconnect-cdc-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: ghcr.io/tryph0n/fitconnect-pipeline:0.2.0
+          imagePullPolicy: IfNotPresent
+          command: ["fc-cdc-consumer"]
+          envFrom:
+            - secretRef:
+                name: fitconnect-env
+          # Each successful run touches the heartbeat file. The path in the probe must equal
+          # CDC_HEARTBEAT_FILE (default in src/fitconnect/config.py).
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - test $(( $(date +%s) - $(stat -c %Y /tmp/fitconnect-cdc-heartbeat) )) -lt 120
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
