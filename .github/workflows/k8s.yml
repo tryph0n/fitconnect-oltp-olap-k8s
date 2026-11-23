@@ -1,0 +1,85 @@
+name: Kubernetes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  K3D_VERSION: v5.9.0
+  K3D_SHA256: 06d8f25bc3a971c4eb29e0ff08429b180402db0f4dec838c9eac427e296800a0
+  K3S_IMAGE: rancher/k3s:v1.35.5-k3s1
+
+jobs:
+  k3d:
+    name: k3d (${{ matrix.storage }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        storage: [local, s3-moto]
+    env:
+      # Read by the Makefile: empty = pod volume, moto = S3 disk on the local moto server.
+      S3: ${{ matrix.storage == 's3-moto' && 'moto' || '' }}
+      DISK: ${{ matrix.storage == 's3-moto' && 's3' || 'default' }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Install k3d
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL -o "$RUNNER_TEMP/bin/k3d" \
+            "https://github.com/k3d-io/k3d/releases/download/${K3D_VERSION}/k3d-linux-amd64"
+          echo "${K3D_SHA256}  $RUNNER_TEMP/bin/k3d" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/bin/k3d"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Build the pipeline image with the tag of the manifests
+        run: |
+          image=$(sed -n 's/^ *image: *\(ghcr\.io\/tryph0n\/fitconnect-pipeline:.*\)$/\1/p' k8s/pipeline/job-pipeline.yaml)
+          echo "IMAGE=$image" >> "$GITHUB_ENV"
+          make image IMAGE="$image"
+      - name: Create a k3d cluster and import the image (the image is not pulled from GHCR)
+        run: |
+          k3d cluster create fc --image "$K3S_IMAGE" --no-lb --k3s-arg "--disable=traefik@server:0" \
+            --wait --timeout 300s
+          k3d image import "$IMAGE" -c fc -m direct
+      - run: make env
+      - run: make up
+      - run: make demo-cdc
+      - name: Restart the consumer, then check that no change is in the journal twice
+        run: |
+          kubectl rollout restart deployment/fitconnect-cdc-consumer -n fitconnect
+          kubectl rollout status deployment/fitconnect-cdc-consumer -n fitconnect --timeout=300s
+          make demo-cdc
+          # shellcheck disable=SC2016 # the pod shell expands the variables
+          duplicates=$(kubectl exec -n fitconnect clickhouse-0 -c clickhouse -- sh -c \
+            'clickhouse-client --user "$CH_USER" --password "$CH_PASSWORD" -d "$CH_DATABASE" -q "$1"' sh "
+            SELECT (SELECT count() - uniqExact(user_id, _lsn) FROM cdc_user)
+                 + (SELECT count() - uniqExact(profile_id, _lsn) FROM cdc_profile)
+                 + (SELECT count() - uniqExact(exercise_id, _lsn) FROM cdc_exercise)
+                 + (SELECT count() - uniqExact(workout_id, _lsn) FROM cdc_workout)
+                 + (SELECT count() - uniqExact(workout_id, exercise_id, _lsn) FROM cdc_workout_exercise)")
+          echo "Journal rows with the same key and LSN: $duplicates"
+          test "$duplicates" = 0
+      - name: Check the disk of the ClickHouse tables
+        run: |
+          # shellcheck disable=SC2016 # the pod shell expands the variables
+          disks=$(kubectl exec -n fitconnect clickhouse-0 -c clickhouse -- sh -c \
+            'clickhouse-client --user "$CH_USER" --password "$CH_PASSWORD" -q "$1"' sh \
+            "SELECT DISTINCT disk_name FROM system.parts WHERE database = 'fitconnect' AND active")
+          echo "Disks: $disks (expected: $DISK)"
+          test "$disks" = "$DISK"
+      - name: Show the cluster state
+        if: failure()
+        run: |
+          kubectl get pods,jobs -n fitconnect -o wide || true
+          kubectl get events -n fitconnect --sort-by=.lastTimestamp | tail -30 || true
+          kubectl logs -n fitconnect deployment/fitconnect-cdc-consumer --tail=50 || true
+          kubectl logs -n fitconnect clickhouse-0 --all-containers --tail=50 || true
