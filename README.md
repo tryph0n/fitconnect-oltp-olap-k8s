@@ -1,11 +1,11 @@
 # FitConnect Pipeline: PostgreSQL to ClickHouse with CDC
 
-[![CI](https://github.com/tryph0n/learn_ga_to_psql/actions/workflows/ci.yml/badge.svg)](https://github.com/tryph0n/learn_ga_to_psql/actions/workflows/ci.yml)
-[![Kubernetes](https://github.com/tryph0n/learn_ga_to_psql/actions/workflows/k8s.yml/badge.svg)](https://github.com/tryph0n/learn_ga_to_psql/actions/workflows/k8s.yml)
+[![CI](https://github.com/tryph0n/fitconnect-oltp-olap-k8s/actions/workflows/ci.yml/badge.svg)](https://github.com/tryph0n/fitconnect-oltp-olap-k8s/actions/workflows/ci.yml)
+[![Kubernetes](https://github.com/tryph0n/fitconnect-oltp-olap-k8s/actions/workflows/k8s.yml/badge.svg)](https://github.com/tryph0n/fitconnect-oltp-olap-k8s/actions/workflows/k8s.yml)
 
 Learning project from a data engineering training course.
 
-A sibling project, [learn_olap](https://github.com/tryph0n/learn_olap), uses the same fictional data with another stack: S3, PostgreSQL and dbt with DuckDB.
+A sibling project, [fitconnect-dbt-duckdb](https://github.com/tryph0n/fitconnect-dbt-duckdb), uses the same fictional data with another stack: S3, PostgreSQL and dbt with DuckDB.
 
 OLTP-to-OLAP pipeline for a fitness application. PostgreSQL is the transactional source. dlt loads a first snapshot of each table into ClickHouse, then a change data capture (CDC) consumer reads the PostgreSQL replication slot and sends each insert, update and delete to ClickHouse. Everything runs on Kubernetes (k3d, K3s or any cluster).
 

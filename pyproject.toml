@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/tryph0n/learn_ga_to_psql"
+Repository = "https://github.com/tryph0n/fitconnect-oltp-olap-k8s"
 
 [project.scripts]
 fc-seed = "fitconnect.seed:main"
