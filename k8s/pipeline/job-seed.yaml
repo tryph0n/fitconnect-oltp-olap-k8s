@@ -11,9 +11,9 @@ spec:
     spec:
       containers:
         - name: seed
-          image: sambot961/fitconnect-pipeline:latest
-          imagePullPolicy: Always
-          command: ["uv", "run", "fc-seed"]
+          image: ghcr.io/tryph0n/fitconnect-pipeline:0.2.0
+          imagePullPolicy: IfNotPresent
+          command: ["fc-seed"]
           envFrom:
             - secretRef:
                 name: fitconnect-env

@@ -1,0 +1,45 @@
+# Strategic merge patch for statefulset.yaml, applied by `make up S3=moto`:
+#   kubectl patch --local -f statefulset.yaml --patch-file s3-patch.yaml -o yaml | kubectl apply -f -
+# It mounts the S3 disk config and creates the bucket before ClickHouse starts (ClickHouse checks
+# the disk at start). The bucket step needs an S3 server that creates buckets without
+# authentication (moto); with AWS, create the bucket first and remove the init container.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: clickhouse
+  namespace: fitconnect
+spec:
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    spec:
+      initContainers:
+        - name: create-bucket
+          image: curlimages/curl:8.23.0
+          env:
+            - name: S3_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: fitconnect-env
+                  key: S3_ENDPOINT
+          command:
+            - sh
+            - -c
+            - |
+              bucket=$(echo "$S3_ENDPOINT" | sed -E 's#^(https?://[^/]+/[^/]+).*#\1#')
+              code=$(curl -sS -o /dev/null -w '%{http_code}' --retry 10 --retry-all-errors -X PUT "$bucket")
+              echo "PUT $bucket: HTTP $code"
+              # 200: created or already ours; 409: already exists
+              [ "$code" = 200 ] || [ "$code" = 409 ]
+      containers:
+        - name: clickhouse
+          volumeMounts:
+            # One file: config.d of the image holds other files that must stay.
+            - name: s3-config
+              mountPath: /etc/clickhouse-server/config.d/storage.xml
+              subPath: storage.xml
+      volumes:
+        - name: s3-config
+          configMap:
+            name: clickhouse-config

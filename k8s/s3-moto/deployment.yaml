@@ -1,0 +1,37 @@
+# Local S3 server for `make up S3=moto`. It keeps the objects in memory: they are lost when the
+# pod stops, and the ClickHouse tables on S3 with them.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moto
+  namespace: fitconnect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moto
+  template:
+    metadata:
+      labels:
+        app: moto
+    spec:
+      # The Service `moto` would inject MOTO_PORT=tcp://..., which moto reads as its port.
+      enableServiceLinks: false
+      containers:
+        - name: moto
+          image: motoserver/moto:5.2.5
+          ports:
+            - containerPort: 5000
+              name: s3
+          readinessProbe:
+            httpGet:
+              path: /moto-api/
+              port: 5000
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"

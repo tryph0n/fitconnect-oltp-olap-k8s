@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      # Includes tests/unit/test_manifests.py: pinned images, pipeline image tag = project version.
+      - run: uv run pytest -q
+      - run: uv run python scripts/check_readme_links.py
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Run the integration tests (PostgreSQL and ClickHouse containers)
+        run: uv run pytest -q -m integration
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Build the pipeline image (no push)
+        run: make image IMAGE=fitconnect-pipeline:ci
+      - name: Check the image content
+        run: |
+          docker run --rm --network none fitconnect-pipeline:ci sh -ec '
+            test ! -e /app/.env
+            test ! -e /app/.venv/bin/ruff
+            for c in fc-seed fc-cdc-setup fc-pipeline fc-cdc-consumer; do command -v "$c"; done'
