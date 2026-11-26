@@ -247,7 +247,7 @@ The manifests use `ghcr.io/tryph0n/fitconnect-pipeline:0.2.0` (the version in `p
 | Event | Tags |
 | --- | --- |
 | Push to `main` | `sha-<short commit>`, `main` |
-| Tag `v<version>` | `<version>`, `sha-<short commit>` |
+| Tag `v<version>` | `<version>` |
 
 To build it yourself:
 
