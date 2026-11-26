@@ -247,7 +247,9 @@ The manifests use `ghcr.io/tryph0n/fitconnect-pipeline:0.2.0` (the version in `p
 | Event | Tags |
 | --- | --- |
 | Push to `main` | `sha-<short commit>`, `main` |
-| Tag `v<version>` | `<version>`, `sha-<short commit>` |
+| Tag `v<version>` | `<version>` |
+
+The image is `linux/amd64` only. On an arm64 machine or node, a pull from GHCR fails: build it locally with `make image` and import it with `k3d image import`, as in the [Quick Start](#quick-start).
 
 To build it yourself:
 
